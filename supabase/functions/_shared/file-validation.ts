@@ -49,13 +49,22 @@ export type ValidatedImageFile = {
   sizeBytes: number;
 };
 
+type DebugLog = (message: string, metadata?: Record<string, unknown>) => void;
+
 export async function validateImageFile(
   value: FormDataEntryValue | null,
-  maxSizeBytes: number
+  maxSizeBytes: number,
+  debugLog?: DebugLog
 ): Promise<ValidatedImageFile> {
+  debugLog?.("image-validation: checking FormData file object");
   if (!(value instanceof File)) {
     throw new ApiError("INVALID_FILE", 400, "कृपया मान्य इमेज फाइल चुनें।");
   }
+
+  debugLog?.("image-validation: checking size and mime type", {
+    mimeType: value.type,
+    sizeBytes: value.size
+  });
 
   if (value.size <= 0) {
     throw new ApiError("INVALID_FILE", 400, "चयनित फाइल खाली या अमान्य है।");
@@ -69,7 +78,9 @@ export async function validateImageFile(
     throw new ApiError("INVALID_FILE", 400, "केवल JPG, JPEG, PNG या WebP इमेज स्वीकार की जाती है।");
   }
 
+  debugLog?.("image-validation: reading magic bytes");
   const bytes = new Uint8Array(await value.slice(0, 16).arrayBuffer());
+  debugLog?.("image-validation: magic bytes read");
 
   if (!hasValidMagicBytes(bytes, value.type)) {
     throw new ApiError("INVALID_FILE", 400, "चयनित फाइल का प्रकार मान्य इमेज से मेल नहीं खाता।");
