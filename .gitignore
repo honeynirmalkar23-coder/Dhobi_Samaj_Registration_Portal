@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+node_modules/.tmp/
+
+# Build and generated output
+dist/
+coverage/
+playwright-report/
+.playwright-output/
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.*
+!.env.example
+*.local
+
+# Local data and databases
+.local-data/
+.local-data-e2e/
+*.sqlite
+*.sqlite-*
+*.db
+*.db-journal
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Secrets and certificates
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Platform and editor metadata
+.DS_Store
+.vercel/

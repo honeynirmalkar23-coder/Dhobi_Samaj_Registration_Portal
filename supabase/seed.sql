@@ -1,0 +1,2 @@
+-- Phase 08 seed file.
+-- The singleton payment_settings row is created by migration 009 so resets remain deterministic.
