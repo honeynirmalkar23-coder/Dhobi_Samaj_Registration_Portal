@@ -1,11 +1,25 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { downloadAcknowledgementPdf, getAcknowledgementFilename } from "./payment.service";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const edgeFunctionMocks = vi.hoisted(() => ({
+  invokeEdgeFunction: vi.fn()
+}));
+
+vi.mock("./edge-functions.service", () => edgeFunctionMocks);
+vi.mock("./backend/backend-mode", () => ({
+  dataBackendMode: "supabase"
+}));
+
+import { downloadAcknowledgementPdf, getAcknowledgementFilename, submitPaymentProof } from "./payment.service";
 
 const registrationId = "DS-2026-000001";
 const paymentAccessToken = "browser-session-payment-token";
 const downloadUrl = `/api/local-portal/acknowledgements/${registrationId}.pdf?token=signed`;
 
 describe("payment acknowledgement service", () => {
+  beforeEach(() => {
+    edgeFunctionMocks.invokeEdgeFunction.mockReset();
+  });
+
   afterEach(() => {
     vi.unstubAllGlobals();
   });
@@ -34,6 +48,28 @@ describe("payment acknowledgement service", () => {
       headers: {
         "X-Payment-Access-Token": paymentAccessToken
       }
+    });
+  });
+
+  it("downloads Supabase signed acknowledgement URLs without local portal auth headers", async () => {
+    const signedDownloadUrl = "https://project.supabase.co/storage/v1/object/sign/payment-acknowledgements/test.pdf?token=signed";
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("%PDF-1.7 test", {
+      headers: {
+        "Content-Type": "application/pdf"
+      },
+      status: 200
+    })));
+
+    await expect(downloadAcknowledgementPdf({
+      downloadUrl: signedDownloadUrl,
+      paymentAccessToken,
+      registrationId
+    })).resolves.toMatchObject({
+      ok: true
+    });
+    expect(fetch).toHaveBeenCalledWith(signedDownloadUrl, {
+      credentials: "omit"
     });
   });
 
@@ -93,6 +129,43 @@ describe("payment acknowledgement service", () => {
     })).resolves.toMatchObject({
       code: "ACKNOWLEDGEMENT_NETWORK_ERROR",
       ok: false
+    });
+  });
+
+  it("preserves acknowledgement metadata returned by the payment proof Edge Function", async () => {
+    edgeFunctionMocks.invokeEdgeFunction.mockResolvedValueOnce({
+      ok: true,
+      data: {
+        acknowledgementAvailable: true,
+        acknowledgementDownloadUrl: "https://storage.example/signed-acknowledgement",
+        acknowledgementNumber: `ACK-${registrationId}-TEST`,
+        paymentStatus: "pending_verification",
+        registrationId,
+        registrationStatus: "submitted",
+        submittedAt: "2026-07-20T00:35:00.000Z"
+      }
+    });
+
+    const paymentScreenshot = new File(["proof"], "payment-proof.png", {
+      type: "image/png"
+    });
+    const result = await submitPaymentProof({
+      paymentAccessToken,
+      registrationId,
+      values: {
+        declarationAccepted: true,
+        paymentScreenshot
+      }
+    });
+
+    expect(edgeFunctionMocks.invokeEdgeFunction).toHaveBeenCalledWith("submit-payment-proof", expect.any(FormData));
+    expect(result).toMatchObject({
+      data: {
+        acknowledgementAvailable: true,
+        acknowledgementDownloadUrl: "https://storage.example/signed-acknowledgement",
+        acknowledgementNumber: `ACK-${registrationId}-TEST`
+      },
+      ok: true
     });
   });
 });

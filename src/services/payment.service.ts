@@ -56,6 +56,32 @@ export function getAcknowledgementFilename(registrationId: string): string {
   return `Acknowledgement_${registrationId}.pdf`;
 }
 
+function isLocalPortalAcknowledgementUrl(downloadUrl: string): boolean {
+  try {
+    return new URL(downloadUrl, window.location.origin).pathname.startsWith("/api/local-portal/acknowledgements/");
+  } catch {
+    return downloadUrl.startsWith("/api/local-portal/acknowledgements/");
+  }
+}
+
+function createAcknowledgementDownloadRequest(params: {
+  downloadUrl: string;
+  paymentAccessToken: string;
+}): RequestInit {
+  if (isLocalPortalAcknowledgementUrl(params.downloadUrl)) {
+    return {
+      credentials: "include",
+      headers: {
+        "X-Payment-Access-Token": params.paymentAccessToken
+      }
+    };
+  }
+
+  return {
+    credentials: "omit"
+  };
+}
+
 export async function getPublicPaymentSettings(): Promise<ServiceResult<PublicPaymentSettingsResult>> {
   if (dataBackendMode === "local-dev") {
     const { getLocalPublicPaymentSettings } = await import("./backend/local-portal.client");
@@ -113,12 +139,7 @@ export async function downloadAcknowledgementPdf(params: {
   paymentAccessToken: string;
 }): Promise<ServiceResult<AcknowledgementPdfResult>> {
   try {
-    const response = await fetch(params.downloadUrl, {
-      credentials: "include",
-      headers: {
-        "X-Payment-Access-Token": params.paymentAccessToken
-      }
-    });
+    const response = await fetch(params.downloadUrl, createAcknowledgementDownloadRequest(params));
 
     if (!response.ok) {
       return serviceFailure("ACKNOWLEDGEMENT_DOWNLOAD_FAILED", "पावती डाउनलोड नहीं हो सकी।", response.status);
