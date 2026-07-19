@@ -140,6 +140,39 @@ export type Database = {
         Args: { p_registration_id: string };
         Returns: Json | null;
       };
+      admin_export_registrations: {
+        Args: Record<string, never>;
+        Returns: Array<{
+          registration_id: string;
+          full_name: string;
+          dob: string | null;
+          age: number;
+          education: string;
+          address: string;
+          boys: number;
+          girls: number;
+          elderly: number;
+          payment_status: Database["public"]["Enums"]["payment_status"];
+          payment_reference: string | null;
+          payment_utr: string | null;
+          payment_amount: number | null;
+          created_at: string;
+          updated_at: string;
+        }>;
+      };
+      admin_export_clear_database: {
+        Args: {
+          p_expected_exported_rows: number;
+          p_csv_filename: string;
+          p_client_ip?: string | null;
+        };
+        Returns: Array<{
+          success: boolean;
+          exported_rows: number;
+          deleted_rows: number;
+          filename: string;
+        }>;
+      };
       admin_save_payment_settings: {
         Args: {
           p_payment_enabled: boolean;

@@ -42,3 +42,4 @@ pnpm-debug.log*
 # Platform and editor metadata
 .DS_Store
 .vercel/
+supabase/.temp/

@@ -2,7 +2,7 @@ import type { MouseEvent, MouseEventHandler, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { cn } from "../../lib/cn";
 
-type ButtonVariant = "primary" | "secondary" | "outline";
+type ButtonVariant = "primary" | "secondary" | "outline" | "danger";
 
 export type ButtonProps = {
   children: ReactNode;
@@ -25,7 +25,9 @@ const variantClasses: Record<ButtonVariant, string> = {
   secondary:
     "border border-saffron-500 bg-saffron-500 text-brown-900 shadow-subtle hover:bg-saffron-600 active:bg-saffron-600",
   outline:
-    "border border-maroon-700/30 bg-white text-maroon-800 hover:border-maroon-700 hover:bg-maroon-50 active:bg-maroon-100"
+    "border border-maroon-700/30 bg-white text-maroon-800 hover:border-maroon-700 hover:bg-maroon-50 active:bg-maroon-100",
+  danger:
+    "border border-red-700 bg-red-700 text-white shadow-subtle hover:bg-red-800 active:bg-red-900"
 };
 
 const baseClasses =
@@ -98,4 +100,8 @@ export function SecondaryButton(props: VariantlessButtonProps) {
 
 export function OutlineButton(props: VariantlessButtonProps) {
   return <Button {...props} variant="outline" />;
+}
+
+export function DangerButton(props: VariantlessButtonProps) {
+  return <Button {...props} variant="danger" />;
 }

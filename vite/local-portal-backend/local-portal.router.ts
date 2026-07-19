@@ -10,6 +10,10 @@ import {
   handleAdminRegistrationList
 } from "./local-portal.admin-data";
 import { getLocalAdminIdentity } from "./local-portal.admin";
+import {
+  handleAdminDatabaseExportClear,
+  handleAdminRegistrationExportRows
+} from "./local-portal.database-export";
 import { serveStoredUpload } from "./local-portal.files";
 import { handleAcknowledgementPdf } from "./local-portal.pdf";
 import {
@@ -285,6 +289,36 @@ export function createLocalPortalBackendMiddleware(context: LocalPortalContext):
           request,
           response,
           url
+        });
+        return;
+      }
+
+      if (pathname === `${localPortalEndpointPrefix}/admin/database/export-rows`) {
+        handleAdminRegistrationExportRows({
+          config,
+          db,
+          request,
+          response
+        });
+        return;
+      }
+
+      if (pathname === `${localPortalEndpointPrefix}/admin/database/export-clear`) {
+        if (!enforceRateLimit({
+          bucket: "admin-database-export-clear",
+          max: 3,
+          request,
+          response,
+          windowMs: 60 * 60 * 1000
+        })) {
+          return;
+        }
+
+        await handleAdminDatabaseExportClear({
+          config,
+          db,
+          request,
+          response
         });
         return;
       }

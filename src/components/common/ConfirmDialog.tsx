@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { X } from "lucide-react";
-import { OutlineButton, PrimaryButton } from "./Button";
+import { Button, OutlineButton } from "./Button";
 import { useLanguage } from "../../features/language/LanguageContext";
 import { useClickOutside } from "../../hooks/useClickOutside";
 import { useEscapeKey } from "../../hooks/useEscapeKey";
@@ -13,6 +13,8 @@ type ConfirmDialogProps = {
   description: string;
   children?: ReactNode;
   confirmLabel?: string;
+  confirmDisabled?: boolean;
+  confirmVariant?: "primary" | "danger";
   cancelLabel?: string;
   showCancel?: boolean;
   onConfirm: () => void;
@@ -29,6 +31,8 @@ export function ConfirmDialog({
   description,
   children,
   confirmLabel,
+  confirmDisabled = false,
+  confirmVariant = "primary",
   cancelLabel,
   showCancel = true,
   onConfirm,
@@ -134,7 +138,9 @@ export function ConfirmDialog({
         {children ? <div className="mt-4 text-sm leading-7 text-brown-700">{children}</div> : null}
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           {showCancel ? <OutlineButton onClick={onCancel}>{resolvedCancelLabel}</OutlineButton> : null}
-          <PrimaryButton onClick={onConfirm}>{resolvedConfirmLabel}</PrimaryButton>
+          <Button disabled={confirmDisabled} onClick={onConfirm} variant={confirmVariant}>
+            {resolvedConfirmLabel}
+          </Button>
         </div>
       </div>
     </div>

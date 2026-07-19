@@ -18,6 +18,7 @@ import type {
 import { buildDashboardMetrics } from "../utilities/admin-dashboard-display";
 import { DashboardMetricsGrid } from "./DashboardMetricsGrid";
 import { DashboardQuickActions } from "./DashboardQuickActions";
+import { ExportClearDatabaseButton } from "./ExportClearDatabaseButton";
 import { RegistrationManagementSection } from "./RegistrationManagementSection";
 
 const defaultFilters: AdminRegistrationFilters = {
@@ -80,6 +81,13 @@ export function AdminDashboardContent() {
   useEffect(() => {
     void refreshRegistrations();
   }, [refreshRegistrations]);
+
+  const refreshDashboard = useCallback(async () => {
+    await Promise.all([
+      refreshMetrics(),
+      refreshRegistrations()
+    ]);
+  }, [refreshMetrics, refreshRegistrations]);
 
   const exportCurrentRows = () => {
     if (!registrationData?.rows.length) {
@@ -150,11 +158,9 @@ export function AdminDashboardContent() {
         isLoading={isLoadingRegistrations}
         onExport={exportCurrentRows}
         onFiltersChange={setFilters}
-        onRefresh={() => {
-          void refreshMetrics();
-          void refreshRegistrations();
-        }}
+        onRefresh={() => void refreshDashboard()}
       />
+      <ExportClearDatabaseButton onCleared={refreshDashboard} />
       <DashboardQuickActions />
     </div>
   );

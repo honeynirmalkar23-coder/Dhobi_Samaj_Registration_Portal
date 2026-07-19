@@ -8,7 +8,10 @@ export const errorMessages = {
   PAYMENT_TOKEN_INVALID: "भुगतान प्रमाण जमा करने की अनुमति मान्य नहीं है।",
   PAYMENT_SUBMISSION_NOT_ALLOWED: "इस पंजीकरण के लिए भुगतान प्रमाण जमा करना अभी उपलब्ध नहीं है।",
   NOT_FOUND: "रिकॉर्ड उपलब्ध नहीं है।",
+  UNAUTHORIZED: "प्रशासन सत्र उपलब्ध नहीं है।",
+  FORBIDDEN: "इस कार्रवाई के लिए administrator अधिकार आवश्यक हैं।",
   CONFLICT: "यह रिकॉर्ड किसी अन्य प्रशासनिक कार्रवाई से बदल चुका है। कृपया नवीनतम जानकारी पुनः लोड करें।",
+  EXPORT_CLEAR_FAILED: "डेटाबेस export और clear कार्रवाई पूरी नहीं हो सकी।",
   INTERNAL_ERROR: "अभी अनुरोध पूरा नहीं हो सका। कृपया कुछ समय बाद पुनः प्रयास करें।"
 } as const;
 

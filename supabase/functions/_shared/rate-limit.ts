@@ -21,6 +21,11 @@ export const rateLimitConfig = {
     action: "get-public-payment-settings",
     limit: 60,
     windowSeconds: 60 * 60
+  },
+  adminDatabaseExportClear: {
+    action: "admin-database-export-clear",
+    limit: 3,
+    windowSeconds: 60 * 60
   }
 } as const;
 

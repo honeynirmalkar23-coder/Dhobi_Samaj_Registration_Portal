@@ -3,6 +3,10 @@ import type { PaymentProofFormInputValues } from "../../features/payment/types/p
 import type { RegistrationFormInputValues } from "../../features/registration/types/registration-form.types";
 import type { PublicRegistrationStatus } from "../../features/status-search/types/status-search.types";
 import type {
+  AdminRegistrationExportRow,
+  ExportClearDatabaseResult
+} from "../admin-database.types";
+import type {
   AdminDashboardMetrics,
   AdminRegistrationFilters,
   AdminRegistrationListResult
@@ -229,6 +233,23 @@ export function loadLocalAdminRegistrations(
   });
 
   return requestJson<AdminRegistrationListResult>(`/admin/registrations?${params.toString()}`);
+}
+
+export function loadLocalAdminRegistrationExportRows(): Promise<ServiceResult<AdminRegistrationExportRow[]>> {
+  return requestJson<AdminRegistrationExportRow[]>("/admin/database/export-rows");
+}
+
+export function runLocalAdminDatabaseExportClear(params: {
+  expectedExportedRows: number;
+  filename: string;
+}): Promise<ServiceResult<ExportClearDatabaseResult>> {
+  return requestJson<ExportClearDatabaseResult>("/admin/database/export-clear", {
+    body: JSON.stringify({
+      expectedExportedRows: params.expectedExportedRows,
+      filename: params.filename
+    }),
+    method: "POST"
+  });
 }
 
 export function loadLocalAdminRegistrationDetails(
