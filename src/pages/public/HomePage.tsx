@@ -1,3 +1,4 @@
+import { useLocation } from "react-router-dom";
 import { CommunityInspirationSection } from "../../components/public/home/CommunityInspirationSection";
 import { EducationMessageSection } from "../../components/public/home/EducationMessageSection";
 import { HeritageGallerySection } from "../../components/public/home/HeritageGallerySection";
@@ -11,8 +12,17 @@ import { imagePaths } from "../../config/images.config";
 import { useLanguage } from "../../features/language/LanguageContext";
 import { usePageMetadata } from "../../hooks/usePageMetadata";
 
+type HomeLocationState = {
+  paymentNotice?: {
+    kind: "warning";
+    message: string;
+  };
+};
+
 export function HomePage() {
   const { copy } = useLanguage();
+  const location = useLocation();
+  const paymentNotice = (location.state as HomeLocationState | null)?.paymentNotice;
 
   usePageMetadata({
     title: copy.home.metadataTitle,
@@ -22,6 +32,17 @@ export function HomePage() {
 
   return (
     <>
+      {paymentNotice ? (
+        <div className="page-shell pt-6">
+          <div
+            aria-live="polite"
+            className="rounded-lg border border-saffron-500/30 bg-saffron-50 px-4 py-3 text-sm font-semibold leading-7 text-brown-800"
+            role="status"
+          >
+            {paymentNotice.message}
+          </div>
+        </div>
+      ) : null}
       <HomeHeroSection />
       <RegistrationSearchSection />
       <RegistrationProcessSection />

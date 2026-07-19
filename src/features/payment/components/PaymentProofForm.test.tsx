@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter, useLocation } from "react-router-dom";
+import { MemoryRouter, useLocation, useNavigationType } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { PublicPaymentSettings } from "../types/payment.types";
 import { PaymentProofForm } from "./PaymentProofForm";
@@ -31,8 +31,19 @@ const activePaymentSettings: PublicPaymentSettings = {
 
 function LocationProbe() {
   const location = useLocation();
+  const navigationType = useNavigationType();
+  const paymentNotice = (location.state as { paymentNotice?: { message?: string } } | null)?.paymentNotice;
 
-  return <output data-testid="location">{`${location.pathname}${location.search}`}</output>;
+  return (
+    <>
+      <output data-navigation-type={navigationType} data-testid="location">
+        {`${location.pathname}${location.search}`}
+      </output>
+      {paymentNotice?.message ? (
+        <output data-testid="payment-notice">{paymentNotice.message}</output>
+      ) : null}
+    </>
+  );
 }
 
 function renderPaymentProofForm(options: {
@@ -237,7 +248,7 @@ describe("PaymentProofForm", () => {
     expect(screen.getByRole("button", { name: "भुगतान प्रमाण जमा करें" })).toBeEnabled();
   });
 
-  it("submits proof once, waits for proof success before PDF download, and initiates the correct download", async () => {
+  it("submits proof once, waits for proof success before PDF download, downloads once, and redirects home", async () => {
     const user = userEvent.setup();
     const deferred = createDeferredSubmission();
     paymentServiceMocks.submitPaymentProof.mockReturnValueOnce(deferred.promise);
@@ -252,8 +263,9 @@ describe("PaymentProofForm", () => {
 
     deferred.resolve(createSubmissionResult());
 
-    expect(await screen.findByText("पावती तैयार की जा रही है…")).toBeInTheDocument();
-    await screen.findByRole("heading", { name: "भुगतान प्रमाण जमा हो गया" });
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("/"));
+    expect(screen.getByTestId("location")).toHaveAttribute("data-navigation-type", "REPLACE");
+    expect(screen.queryByTestId("payment-notice")).not.toBeInTheDocument();
 
     expect(paymentServiceMocks.downloadAcknowledgementPdf).toHaveBeenCalledTimes(1);
     expect(paymentServiceMocks.downloadAcknowledgementPdf).toHaveBeenCalledWith({
@@ -279,7 +291,7 @@ describe("PaymentProofForm", () => {
     renderPaymentProofForm();
 
     await submitValidProof(user);
-    await screen.findByRole("heading", { name: "भुगतान प्रमाण जमा हो गया" });
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("/"));
 
     expect(URL.revokeObjectURL).not.toHaveBeenCalledWith("blob:payment-proof-object-url-2");
     await waitFor(
@@ -288,46 +300,30 @@ describe("PaymentProofForm", () => {
     );
   });
 
-  it("redirects home only after acknowledgement download starts and cleans up redirect timers", async () => {
-    const originalSetTimeout = window.setTimeout;
-    let redirectHandler: (() => void) | null = null;
-    vi.spyOn(window, "setTimeout").mockImplementation(((handler, timeout, ...args) => {
-      if (timeout === 5000 && typeof handler === "function") {
-        redirectHandler = () => handler(...args);
-        return 5;
-      }
-
-      return originalSetTimeout(handler as TimerHandler, timeout, ...args);
-    }) as typeof window.setTimeout);
-    const user = userEvent.setup();
-    const { unmount } = renderPaymentProofForm();
-
-    await submitValidProof(user);
-
-    expect(await screen.findByText("5 सेकंड में होम पेज पर भेजा जाएगा।")).toBeInTheDocument();
-    expect(screen.getByTestId("location")).toHaveTextContent(`/payment/${registrationId}`);
-
-    redirectHandler?.();
-    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("/"));
-
-    unmount();
-  });
-
-  it("allows staying on the page to cancel the automatic redirect", async () => {
-    const clearTimeoutSpy = vi.spyOn(window, "clearTimeout");
+  it("redirects home immediately after acknowledgement download starts", async () => {
     const user = userEvent.setup();
     renderPaymentProofForm();
 
     await submitValidProof(user);
-    await screen.findByText("5 सेकंड में होम पेज पर भेजा जाएगा।");
-    await user.click(screen.getByRole("button", { name: "इस पेज पर रहें" }));
 
-    expect(clearTimeoutSpy).toHaveBeenCalled();
-    expect(screen.getByTestId("location")).toHaveTextContent(`/payment/${registrationId}`);
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("/"));
+    expect(screen.getByTestId("location")).toHaveAttribute("data-navigation-type", "REPLACE");
+    expect(screen.queryByText("5 सेकंड में होम पेज पर भेजा जाएगा।")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "इस पेज पर रहें" })).not.toBeInTheDocument();
   });
 
-  it("keeps proof submitted and blocks immediate redirect when PDF download fails", async () => {
-    const setTimeoutSpy = vi.spyOn(window, "setTimeout");
+  it("does not offer a stay-on-page action after successful submission", async () => {
+    const user = userEvent.setup();
+    renderPaymentProofForm();
+
+    await submitValidProof(user);
+
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("/"));
+    expect(screen.queryByRole("button", { name: "इस पेज पर रहें" })).not.toBeInTheDocument();
+  });
+
+  it("redirects home when PDF download fails without repeating the submission", async () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
     const user = userEvent.setup();
     paymentServiceMocks.downloadAcknowledgementPdf.mockResolvedValueOnce({
       code: "EMPTY_ACKNOWLEDGEMENT",
@@ -338,40 +334,43 @@ describe("PaymentProofForm", () => {
 
     await submitValidProof(user);
 
-    expect(await screen.findByText("भुगतान प्रमाण जमा हो गया है, लेकिन पावती स्वतः डाउनलोड नहीं हो सकी।")).toBeInTheDocument();
+    expect(
+      (await screen.findAllByText("भुगतान प्रमाण सफलतापूर्वक जमा हो गया। पावती स्वतः डाउनलोड नहीं हो सकी।")).length
+    ).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "पावती डाउनलोड करें" })).toBeInTheDocument();
-
-    expect(setTimeoutSpy).not.toHaveBeenCalledWith(expect.any(Function), 5000);
-    expect(screen.getByTestId("location")).toHaveTextContent(`/payment/${registrationId}`);
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("/"));
+    expect(screen.getByTestId("location")).toHaveAttribute("data-navigation-type", "REPLACE");
+    expect(screen.getByTestId("payment-notice")).toHaveTextContent("भुगतान प्रमाण सफलतापूर्वक जमा हो गया। पावती स्वतः डाउनलोड नहीं हो सकी।");
     expect(paymentServiceMocks.submitPaymentProof).toHaveBeenCalledTimes(1);
+    expect(paymentServiceMocks.downloadAcknowledgementPdf).toHaveBeenCalledTimes(1);
+    expect(consoleErrorSpy).toHaveBeenCalled();
   });
 
-  it("manual PDF retry calls only the PDF endpoint and can restart the redirect", async () => {
+  it("redirects home when acknowledgement metadata is missing without calling the PDF endpoint", async () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
     const user = userEvent.setup();
-    paymentServiceMocks.downloadAcknowledgementPdf
-      .mockResolvedValueOnce({
-        code: "INVALID_ACKNOWLEDGEMENT_TYPE",
-        message: "पावती PDF स्वरूप में उपलब्ध नहीं है।",
-        ok: false
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        data: {
-          blob: new Blob(["%PDF-1.7 retry"], {
-            type: "application/pdf"
-          }),
-          filename: acknowledgementFilename
-        }
-      });
+    paymentServiceMocks.submitPaymentProof.mockResolvedValueOnce({
+      ok: true,
+      data: {
+        acknowledgementAvailable: false,
+        paymentStatus: "pending_verification",
+        registrationId,
+        registrationStatus: "submitted",
+        submittedAt: "2026-07-16T00:00:00.000Z"
+      }
+    });
     renderPaymentProofForm();
 
     await submitValidProof(user);
-    await screen.findByRole("button", { name: "पावती डाउनलोड करें" });
-    await user.click(screen.getByRole("button", { name: "पावती डाउनलोड करें" }));
 
+    expect(
+      (await screen.findAllByText("भुगतान प्रमाण सफलतापूर्वक जमा हो गया। पावती स्वतः डाउनलोड नहीं हो सकी।")).length
+    ).toBeGreaterThan(0);
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("/"));
+    expect(screen.getByTestId("payment-notice")).toHaveTextContent("भुगतान प्रमाण सफलतापूर्वक जमा हो गया। पावती स्वतः डाउनलोड नहीं हो सकी।");
     expect(paymentServiceMocks.submitPaymentProof).toHaveBeenCalledTimes(1);
-    expect(paymentServiceMocks.downloadAcknowledgementPdf).toHaveBeenCalledTimes(2);
-    expect(await screen.findByText("5 सेकंड में होम पेज पर भेजा जाएगा।")).toBeInTheDocument();
+    expect(paymentServiceMocks.downloadAcknowledgementPdf).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalled();
   });
 
   it("renders inline API errors without invoking the success flow", async () => {

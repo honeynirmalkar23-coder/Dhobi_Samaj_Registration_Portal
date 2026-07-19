@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Clock, Download, Home, Search, ShieldCheck, XCircle } from "lucide-react";
+import { ArrowLeft, Download, Home, Search, ShieldCheck } from "lucide-react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import type { FieldErrors, Resolver, SubmitErrorHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -35,8 +35,6 @@ type PaymentSubmissionState =
   | "submitting-proof"
   | "proof-submitted"
   | "downloading-acknowledgement"
-  | "download-initiated"
-  | "redirect-pending"
   | "completed"
   | "error";
 
@@ -54,8 +52,6 @@ type PaymentSubmissionResultState = StoredSubmissionResult & Pick<
   "acknowledgementDownloadUrl" | "acknowledgementNumber"
 >;
 
-const redirectSeconds = 5;
-
 function getSubmissionStorageKey(registrationId: string): string {
   return `dhobi-payment-submission:${registrationId}`;
 }
@@ -68,8 +64,6 @@ function isTerminalSubmittedState(state: PaymentSubmissionState): boolean {
   return [
     "proof-submitted",
     "downloading-acknowledgement",
-    "download-initiated",
-    "redirect-pending",
     "completed"
   ].includes(state);
 }
@@ -140,6 +134,21 @@ function formatSubmissionTime(value: string | undefined, language: "hi" | "en" =
   }).format(date);
 }
 
+function triggerPdfDownload(blob: Blob, filename: string): void {
+  const objectUrl = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+
+  try {
+    anchor.href = objectUrl;
+    anchor.download = filename;
+    document.body.append(anchor);
+    anchor.click();
+  } finally {
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+  }
+}
+
 export function PaymentProofForm({
   paymentAccessToken,
   paymentResubmissionAllowed = false,
@@ -153,8 +162,8 @@ export function PaymentProofForm({
     "Payment proof has been submitted successfully. Administrative verification is pending."
   );
   const pdfFailureMessage = localized(
-    "भुगतान प्रमाण जमा हो गया है, लेकिन पावती स्वतः डाउनलोड नहीं हो सकी।",
-    "Payment proof has been submitted, but the acknowledgement could not be downloaded automatically."
+    "भुगतान प्रमाण सफलतापूर्वक जमा हो गया। पावती स्वतः डाउनलोड नहीं हो सकी।",
+    "Payment proof submitted successfully. Automatic acknowledgement download failed."
   );
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -163,10 +172,6 @@ export function PaymentProofForm({
   const [submissionState, setSubmissionState] = useState<PaymentSubmissionState>(() =>
     loadStoredSubmission(registrationId) ? "proof-submitted" : "idle"
   );
-  const [redirectCountdown, setRedirectCountdown] = useState(redirectSeconds);
-  const redirectTimeoutRef = useRef<number | null>(null);
-  const redirectIntervalRef = useRef<number | null>(null);
-  const objectUrlCleanupRef = useRef<number | null>(null);
   const methods = useForm<PaymentProofFormInputValues>({
     defaultValues: paymentProofDefaults,
     mode: "onTouched",
@@ -205,20 +210,6 @@ export function PaymentProofForm({
   useUnsavedChanges(isDirty && !hasSubmittedProof);
 
   useEffect(() => {
-    return () => {
-      if (redirectTimeoutRef.current !== null) {
-        window.clearTimeout(redirectTimeoutRef.current);
-      }
-      if (redirectIntervalRef.current !== null) {
-        window.clearInterval(redirectIntervalRef.current);
-      }
-      if (objectUrlCleanupRef.current !== null) {
-        window.clearTimeout(objectUrlCleanupRef.current);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
     if (!paymentResubmissionAllowed) {
       return;
     }
@@ -231,41 +222,26 @@ export function PaymentProofForm({
     );
   }, [paymentResubmissionAllowed, registrationId]);
 
-  const clearRedirectTimers = useCallback(() => {
-    if (redirectTimeoutRef.current !== null) {
-      window.clearTimeout(redirectTimeoutRef.current);
-      redirectTimeoutRef.current = null;
-    }
-    if (redirectIntervalRef.current !== null) {
-      window.clearInterval(redirectIntervalRef.current);
-      redirectIntervalRef.current = null;
-    }
-  }, []);
-
-  const scheduleHomeRedirect = useCallback(() => {
-    clearRedirectTimers();
-    setRedirectCountdown(redirectSeconds);
-    setSubmissionState("redirect-pending");
-
-    redirectIntervalRef.current = window.setInterval(() => {
-      setRedirectCountdown((currentValue) => Math.max(0, currentValue - 1));
-    }, 1000);
-
-    redirectTimeoutRef.current = window.setTimeout(() => {
-      clearRedirectTimers();
-      setSubmissionState("completed");
+  const navigateHomeAfterSubmission = useCallback((noticeMessage?: string) => {
+    if (noticeMessage) {
       navigate(routePaths.home, {
-        replace: true
+        replace: true,
+        state: {
+          paymentNotice: {
+            kind: "warning",
+            message: noticeMessage
+          }
+        }
       });
-    }, redirectSeconds * 1000);
-  }, [clearRedirectTimers, navigate]);
+      return;
+    }
 
-  const cancelHomeRedirect = useCallback(() => {
-    clearRedirectTimers();
-    setSubmissionState("download-initiated");
-  }, [clearRedirectTimers]);
+    navigate(routePaths.home, {
+      replace: true
+    });
+  }, [navigate]);
 
-  const downloadAcknowledgement = useCallback(async (downloadUrl: string): Promise<boolean> => {
+  const downloadAcknowledgement = useCallback(async (downloadUrl: string): Promise<void> => {
     setDownloadError(null);
     setSubmissionState("downloading-acknowledgement");
 
@@ -276,31 +252,11 @@ export function PaymentProofForm({
     });
 
     if (!result.ok) {
-      setDownloadError(pdfFailureMessage);
-      setSubmissionState("proof-submitted");
-      return false;
+      throw new Error(`${result.code}: ${result.message}`);
     }
 
-    const objectUrl = URL.createObjectURL(result.data.blob);
-    const anchor = document.createElement("a");
-
-    anchor.href = objectUrl;
-    anchor.download = result.data.filename;
-    document.body.append(anchor);
-    anchor.click();
-    anchor.remove();
-
-    if (objectUrlCleanupRef.current !== null) {
-      window.clearTimeout(objectUrlCleanupRef.current);
-    }
-    objectUrlCleanupRef.current = window.setTimeout(() => {
-      URL.revokeObjectURL(objectUrl);
-      objectUrlCleanupRef.current = null;
-    }, 1000);
-
-    setSubmissionState("download-initiated");
-    return true;
-  }, [paymentAccessToken, pdfFailureMessage, registrationId]);
+    triggerPdfDownload(result.data.blob, result.data.filename);
+  }, [paymentAccessToken, registrationId]);
 
   const focusFirstError = (submitErrors: FieldErrors<PaymentProofFormInputValues>) => {
     const firstErrorName = paymentProofFieldOrder.find((fieldName) => fieldName in submitErrors);
@@ -392,15 +348,21 @@ export function PaymentProofForm({
     storeSubmissionResult(storedResult);
     setSubmissionState("proof-submitted");
 
-    if (!storedResult.acknowledgementAvailable || !storedResult.acknowledgementDownloadUrl) {
+    let acknowledgementDownloadFailureMessage: string | undefined;
+
+    try {
+      if (!storedResult.acknowledgementAvailable || !storedResult.acknowledgementDownloadUrl) {
+        throw new Error("Acknowledgement download URL is unavailable.");
+      }
+
+      await downloadAcknowledgement(storedResult.acknowledgementDownloadUrl);
+    } catch (error) {
+      console.error(error);
       setDownloadError(pdfFailureMessage);
-      return;
-    }
-
-    const downloadStarted = await downloadAcknowledgement(storedResult.acknowledgementDownloadUrl);
-
-    if (downloadStarted) {
-      scheduleHomeRedirect();
+      acknowledgementDownloadFailureMessage = pdfFailureMessage;
+    } finally {
+      setSubmissionState("completed");
+      navigateHomeAfterSubmission(acknowledgementDownloadFailureMessage);
     }
   };
 
@@ -419,10 +381,17 @@ export function PaymentProofForm({
       return;
     }
 
-    const downloadStarted = await downloadAcknowledgement(submissionResult.acknowledgementDownloadUrl);
+    let acknowledgementDownloadFailureMessage: string | undefined;
 
-    if (downloadStarted) {
-      scheduleHomeRedirect();
+    try {
+      await downloadAcknowledgement(submissionResult.acknowledgementDownloadUrl);
+    } catch (error) {
+      console.error(error);
+      setDownloadError(pdfFailureMessage);
+      acknowledgementDownloadFailureMessage = pdfFailureMessage;
+    } finally {
+      setSubmissionState("completed");
+      navigateHomeAfterSubmission(acknowledgementDownloadFailureMessage);
     }
   };
 
@@ -495,10 +464,10 @@ export function PaymentProofForm({
                 <div>
                   <dt className="font-semibold text-brown-700">{localized("पावती डाउनलोड", "Acknowledgement download")}</dt>
                   <dd className="font-bold text-maroon-900">
-                    {submissionState === "redirect-pending" || submissionState === "download-initiated" || submissionState === "completed"
-                      ? localized("डाउनलोड शुरू हुआ", "Download started")
-                      : downloadError
-                        ? localized("दोबारा प्रयास करें", "Try again")
+                    {downloadError
+                      ? localized("दोबारा प्रयास करें", "Try again")
+                      : submissionState === "completed"
+                        ? localized("डाउनलोड शुरू हुआ", "Download started")
                         : localized("तैयार की जा रही है", "Preparing")}
                   </dd>
                 </div>
@@ -515,15 +484,6 @@ export function PaymentProofForm({
                   "This is not a final payment receipt. Payment verification will be completed by administration."
                 )}
               </p>
-              {submissionState === "redirect-pending" ? (
-                <p className="mt-4 flex gap-2 text-sm font-semibold leading-7 text-communityGreen-700">
-                  <Clock aria-hidden="true" className="mt-1 h-5 w-5 shrink-0" />
-                  {localized(
-                    `${redirectCountdown} सेकंड में होम पेज पर भेजा जाएगा।`,
-                    `You will be sent to the home page in ${redirectCountdown} seconds.`
-                  )}
-                </p>
-              ) : null}
               <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <SecondaryButton
                   disabled={!submissionResult?.acknowledgementDownloadUrl || submissionState === "downloading-acknowledgement"}
@@ -542,12 +502,6 @@ export function PaymentProofForm({
                   <Home aria-hidden="true" className="h-5 w-5" />
                   {localized("होम पेज पर जाएं", "Go to home page")}
                 </OutlineButton>
-                {submissionState === "redirect-pending" ? (
-                  <OutlineButton onClick={cancelHomeRedirect}>
-                    <XCircle aria-hidden="true" className="h-5 w-5" />
-                    {localized("इस पेज पर रहें", "Stay on this page")}
-                  </OutlineButton>
-                ) : null}
               </div>
             </section>
           ) : null}
