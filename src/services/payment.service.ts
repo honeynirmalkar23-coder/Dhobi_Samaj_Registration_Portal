@@ -139,7 +139,18 @@ export async function downloadAcknowledgementPdf(params: {
   paymentAccessToken: string;
 }): Promise<ServiceResult<AcknowledgementPdfResult>> {
   try {
-    const response = await fetch(params.downloadUrl, createAcknowledgementDownloadRequest(params));
+    const requestOptions = createAcknowledgementDownloadRequest(params);
+
+    console.log("DOWNLOAD URL", params.downloadUrl);
+    console.log("FETCH OPTIONS", requestOptions);
+
+    debugger;
+
+    const response = await fetch(params.downloadUrl, requestOptions);
+
+    console.log("FETCH RESPONSE", response);
+    console.log("STATUS", response.status);
+    console.log("CONTENT TYPE", response.headers.get("content-type"));
 
     if (!response.ok) {
       return serviceFailure("ACKNOWLEDGEMENT_DOWNLOAD_FAILED", "पावती डाउनलोड नहीं हो सकी।", response.status);
