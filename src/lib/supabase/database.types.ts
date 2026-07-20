@@ -171,6 +171,8 @@ export type Database = {
           exported_rows: number;
           deleted_rows: number;
           filename: string;
+          failure_code: string | null;
+          failure_message: string | null;
         }>;
       };
       admin_save_payment_settings: {

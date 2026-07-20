@@ -1,69 +1,4 @@
-alter table public.admin_audit_logs
-drop constraint if exists admin_audit_logs_action;
-
-alter table public.admin_audit_logs
-add constraint admin_audit_logs_action check (
-  action in (
-    'payment_settings_updated',
-    'payment_verified',
-    'payment_rejected',
-    'registration_marked_under_review',
-    'registration_approved',
-    'registration_rejected',
-    'registration_archived',
-    'payment_resubmission_enabled',
-    'admin_note_updated',
-    'EXPORT_AND_CLEAR_DATABASE'
-  )
-);
-
-create or replace function public.admin_export_registrations()
-returns table(
-  registration_id text,
-  full_name text,
-  dob text,
-  age smallint,
-  education text,
-  address text,
-  boys smallint,
-  girls smallint,
-  elderly smallint,
-  payment_status public.payment_status,
-  payment_reference text,
-  payment_utr text,
-  payment_amount numeric,
-  created_at timestamptz,
-  updated_at timestamptz
-)
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  perform public.assert_admin();
-
-  return query
-  select
-    r.registration_id,
-    r.full_name,
-    null::text as dob,
-    r.age,
-    r.education_level as education,
-    r.permanent_address as address,
-    r.boys_count as boys,
-    r.girls_count as girls,
-    r.elders_count as elderly,
-    r.payment_status,
-    null::text as payment_reference,
-    null::text as payment_utr,
-    ps.amount as payment_amount,
-    r.created_at,
-    r.updated_at
-  from public.registrations r
-  left join public.payment_settings ps on ps.id = 1
-  order by r.created_at asc, r.registration_id asc;
-end;
-$$;
+drop function if exists public.admin_export_clear_database(bigint, text, text);
 
 create or replace function public.admin_export_clear_database(
   p_expected_exported_rows bigint,
@@ -111,6 +46,7 @@ begin
         'csvFilename', nullif(filename, ''),
         'expectedExportedRows', p_expected_exported_rows,
         'failureCode', 'VALIDATION_ERROR',
+        'failureMessage', 'invalid export clear request',
         'ipAddress', p_client_ip,
         'success', false,
         'time', now()
@@ -218,8 +154,5 @@ begin
 end;
 $$;
 
-revoke all on function public.admin_export_registrations() from anon, authenticated;
 revoke all on function public.admin_export_clear_database(bigint, text, text) from anon, authenticated;
-
-grant execute on function public.admin_export_registrations() to authenticated;
 grant execute on function public.admin_export_clear_database(bigint, text, text) to authenticated;

@@ -1,7 +1,6 @@
 import { getSupabaseClient } from "../lib/supabase/client";
 import { dataBackendMode } from "./backend/backend-mode";
-import { invokeEdgeFunction } from "./edge-functions.service";
-import type { ServiceResult } from "./api.types";
+import type { ApiResponse, ServiceResult } from "./api.types";
 import { serviceFailure, serviceSuccess } from "./api.types";
 import type {
   AdminRegistrationExportRow,
@@ -64,9 +63,61 @@ export async function runAdminDatabaseExportClear(params: {
     return runLocalAdminDatabaseExportClear(params);
   }
 
-  return invokeEdgeFunction<ExportClearDatabaseResult>("admin-database-export-clear", {
-    expectedExportedRows: params.expectedExportedRows,
-    filename: params.filename
-  });
+  return runSupabaseAdminDatabaseExportClear(params);
 }
 
+async function readExportClearFunctionFailure(
+  response: Response | undefined
+): Promise<ServiceResult<ExportClearDatabaseResult> | null> {
+  if (!response) {
+    return null;
+  }
+
+  try {
+    const body = await response.clone().json() as ApiResponse<ExportClearDatabaseResult>;
+
+    if (!body.success) {
+      return serviceFailure(body.error.code, body.error.message, response.status);
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
+async function runSupabaseAdminDatabaseExportClear(params: {
+  expectedExportedRows: number;
+  filename: string;
+}): Promise<ServiceResult<ExportClearDatabaseResult>> {
+  const supabase = getSupabaseClient();
+
+  if (!supabase) {
+    return getConfigurationFailure();
+  }
+
+  const { data, error, response } = await supabase.functions.invoke<ApiResponse<ExportClearDatabaseResult>>(
+    "admin-database-export-clear",
+    {
+      body: {
+        expectedExportedRows: params.expectedExportedRows,
+        filename: params.filename
+      }
+    }
+  );
+
+  if (error) {
+    return await readExportClearFunctionFailure(response)
+      ?? serviceFailure("NETWORK_ERROR", "सुरक्षित सेवा से संपर्क नहीं हो सका।");
+  }
+
+  if (!data) {
+    return serviceFailure("EMPTY_RESPONSE", "सर्वर से मान्य उत्तर नहीं मिला।");
+  }
+
+  if (!data.success) {
+    return serviceFailure(data.error.code, data.error.message, response?.status);
+  }
+
+  return serviceSuccess(data.data);
+}
