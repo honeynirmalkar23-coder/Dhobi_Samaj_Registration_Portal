@@ -1,5 +1,3 @@
-drop function if exists public.admin_export_clear_database(bigint, text, text);
-
 create or replace function public.admin_export_clear_database(
   p_expected_exported_rows bigint,
   p_csv_filename text,

@@ -154,9 +154,9 @@ begin
       select r.id from public.registrations r
     );
 
-    delete from public.payment_proofs;
-    delete from public.registrations;
-    delete from public.registration_counters;
+    delete from public.payment_proofs where true;
+    delete from public.registrations where true;
+    delete from public.registration_counters where true;
 
     perform public.insert_admin_audit_log(
       'EXPORT_AND_CLEAR_DATABASE',
