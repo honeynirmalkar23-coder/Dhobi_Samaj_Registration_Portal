@@ -20,6 +20,11 @@ const galleryImageAssets = [
     src: communityImages.heritagePhotoTwo,
     width: 736,
     height: 506
+  },
+  {
+    src: communityImages.mataNatinDhobinDai,
+    width: 1086,
+    height: 1448
   }
 ] as const;
 
@@ -51,7 +56,7 @@ export function HeritageGallerySection() {
             {copy.home.gallery.description}
           </p>
         </div>
-        <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {galleryImages.map((image, index) => (
             <article
               className="overflow-hidden rounded-lg border border-maroon-700/10 bg-white shadow-subtle"

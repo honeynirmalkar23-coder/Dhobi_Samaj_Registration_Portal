@@ -12,6 +12,7 @@ export const communityImages = {
   heritagePhotoOne: "/images/community/heritage-photo-one.jpeg",
   heritageGroup: "/images/community/heritage-group.jpeg",
   heritagePhotoTwo: "/images/community/heritage-photo-two.jpeg",
+  mataNatinDhobinDai: "/images/community/Mata_Natin_Dhobin_Dai.png",
   educationQuoteTwo: "/images/community/education-quote-two.jpeg"
 } as const;
 

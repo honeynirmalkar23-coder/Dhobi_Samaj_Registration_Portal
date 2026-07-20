@@ -145,6 +145,10 @@ export const languageCopy = {
           {
             alt: "सेवा और मानवीय संवाद का दृश्य",
             caption: "सेवा और मानवीय संवाद का दृश्य"
+          },
+          {
+            alt: "माता नतिन धोबिन दाई का चित्र",
+            caption: "माता नतिन धोबिन दाई"
           }
         ],
         lightboxTitle: "समाज की विरासत और स्मृतियां",
@@ -337,6 +341,10 @@ export const languageCopy = {
           {
             alt: "A scene of service and human connection",
             caption: "A scene of service and human connection"
+          },
+          {
+            alt: "Image of Mata Natin Dhobin Dai",
+            caption: "Mata Natin Dhobin Dai"
           }
         ],
         lightboxTitle: "Community heritage and memories",

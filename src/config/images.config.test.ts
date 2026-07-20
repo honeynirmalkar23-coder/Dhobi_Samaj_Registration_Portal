@@ -7,7 +7,7 @@ describe("community image configuration", () => {
   it("points all configured community images to existing files", () => {
     const imagePaths = Object.values(communityImages);
 
-    expect(imagePaths).toHaveLength(9);
+    expect(imagePaths).toHaveLength(10);
     imagePaths.forEach((imagePath) => {
       expect(existsSync(join(process.cwd(), "public", imagePath))).toBe(true);
     });
