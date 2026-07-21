@@ -46,7 +46,23 @@ export const languageCopy = {
         ctaRegistration: "नया पंजीकरण करें",
         ctaStatus: "पंजीकरण स्थिति देखें",
         eyebrow: "डिजिटल समाज सेवा की ओर एक कदम",
+        goalItems: [
+          {
+            marker: "१",
+            text: "युवाओं को शिक्षा और रोजगार"
+          },
+          {
+            marker: "२",
+            text: "जरूरतमंद लोगों की सेवा"
+          },
+          {
+            marker: "३",
+            text: "मेडिकल सहायता"
+          }
+        ],
         privacy: "आपकी व्यक्तिगत जानकारी केवल पंजीकरण एवं प्रशासनिक सत्यापन के लिए उपयोग की जाएगी।",
+        sloganLineOne: "नई सोच नई शुरुआत",
+        sloganLineTwo: "एक होकर चलेगा धोबी समाज",
         supportingText: "अपना विवरण दर्ज करें, पंजीकरण शुल्क का प्रमाण जमा करें और अपनी पंजीकरण स्थिति ऑनलाइन देखें।",
         tagline: "समाज के सदस्यों के लिए सरल, सुरक्षित और पारदर्शी डिजिटल पंजीकरण सुविधा।",
         titleLineOne: "धोबी समाज",
@@ -242,7 +258,23 @@ export const languageCopy = {
         ctaRegistration: "Start registration",
         ctaStatus: "Check registration status",
         eyebrow: "One step toward digital community service",
+        goalItems: [
+          {
+            marker: "1",
+            text: "Education and employment for youth"
+          },
+          {
+            marker: "2",
+            text: "Service for people in need"
+          },
+          {
+            marker: "3",
+            text: "Medical help"
+          }
+        ],
         privacy: "Your personal information will be used only for registration and administrative verification.",
+        sloganLineOne: "New thinking, new beginning",
+        sloganLineTwo: "Dhobi Samaj will move forward as one",
         supportingText: "Enter your details, submit registration-fee proof and track your registration status online.",
         tagline: "A simple, secure and transparent digital registration service for community members.",
         titleLineOne: "Dhobi Samaj",

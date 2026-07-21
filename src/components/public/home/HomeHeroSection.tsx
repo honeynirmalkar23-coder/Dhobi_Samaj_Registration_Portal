@@ -35,6 +35,29 @@ export function HomeHeroSection() {
                 {copy.home.hero.supportingText}
               </p>
 
+              <div className="mt-5 max-w-xl rounded-xl border border-saffron-100/20 bg-saffron-100/10 p-4 shadow-lg backdrop-blur-sm">
+                <p className="text-xl font-bold leading-8 text-saffron-100">
+                  {copy.home.hero.sloganLineOne}
+                </p>
+                <p className="mt-1 text-base font-semibold leading-7 text-white">
+                  {copy.home.hero.sloganLineTwo}
+                </p>
+
+                <ul className="mt-4 grid gap-2 text-sm font-semibold leading-6 text-cream-100 sm:grid-cols-3">
+                  {copy.home.hero.goalItems.map((item) => (
+                    <li
+                      className="flex min-h-14 items-start gap-2 rounded-lg border border-white/10 bg-brown-800/45 px-3 py-2"
+                      key={item.text}
+                    >
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-saffron-500 text-xs font-bold text-brown-900">
+                        {item.marker}
+                      </span>
+                      <span>{item.text}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
                 <PrimaryButton
                   className="h-14 rounded-xl bg-saffron-500 px-8 text-base font-semibold text-brown-900 shadow-lg transition hover:bg-saffron-600"
