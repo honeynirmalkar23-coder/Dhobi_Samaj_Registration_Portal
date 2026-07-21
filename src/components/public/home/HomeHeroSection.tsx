@@ -35,6 +35,18 @@ export function HomeHeroSection() {
                 {copy.home.hero.supportingText}
               </p>
 
+              <div className="mt-6 overflow-hidden rounded-xl border border-white/10 bg-brown-950/40 shadow-lg lg:hidden">
+                <img
+                  alt={copy.home.hero.alt}
+                  className="aspect-square w-full object-contain"
+                  decoding="async"
+                  height={723}
+                  loading="eager"
+                  src={communityImages.hero}
+                  width={720}
+                />
+              </div>
+
               <div className="mt-5 max-w-xl rounded-xl border border-saffron-100/20 bg-saffron-100/10 p-4 shadow-lg backdrop-blur-sm">
                 <p className="text-xl font-bold leading-8 text-saffron-100">
                   {copy.home.hero.sloganLineOne}
@@ -95,6 +107,8 @@ export function HomeHeroSection() {
             alt={copy.home.hero.alt}
             loading="eager"
             decoding="async"
+            height={723}
+            width={720}
             className="h-[92%] w-auto object-contain object-right drop-shadow-[0_15px_40px_rgba(0,0,0,0.55)]"
           />
 
