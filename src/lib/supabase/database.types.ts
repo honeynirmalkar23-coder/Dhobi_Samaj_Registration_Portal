@@ -15,6 +15,7 @@ export type Database = {
           registration_id: string;
           full_name: string;
           age: number;
+          mobile_number: string | null;
           education_level: string;
           education_details: string | null;
           permanent_address: string;
@@ -145,6 +146,7 @@ export type Database = {
         Returns: Array<{
           registration_id: string;
           full_name: string;
+          mobile_number: string | null;
           dob: string | null;
           age: number;
           education: string;

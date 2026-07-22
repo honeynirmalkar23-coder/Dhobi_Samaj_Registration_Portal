@@ -6,6 +6,7 @@ import type { RegistrationFormInputValues } from "../types/registration-form.typ
 import {
   blockInvalidNumberKey,
   normalizeFullName,
+  normalizeMobileNumber,
   registrationFieldIds
 } from "../utilities/registration-form.utils";
 import { RegistrationSection } from "./RegistrationSection";
@@ -76,6 +77,38 @@ export function PersonalDetailsSection() {
             placeholder={localized("उदाहरण: 35", "Example: 35")}
             type="number"
             {...register("age")}
+          />
+        </FormField>
+
+        <FormField
+          className="md:col-span-2"
+          error={errors.mobileNumber?.message}
+          hint={localized("भारत का 10 अंकों वाला मोबाइल नंबर दर्ज करें।", "Enter a 10-digit Indian mobile number.")}
+          id={registrationFieldIds.mobileNumber}
+          label={localized("मोबाइल नंबर", "Mobile number")}
+          required
+        >
+          <input
+            aria-describedby={cn(
+              `${registrationFieldIds.mobileNumber}-hint`,
+              errors.mobileNumber && `${registrationFieldIds.mobileNumber}-error`
+            )}
+            aria-invalid={Boolean(errors.mobileNumber)}
+            autoComplete="tel"
+            className={inputClasses}
+            id={registrationFieldIds.mobileNumber}
+            inputMode="numeric"
+            maxLength={14}
+            placeholder={localized("उदाहरण: 9876543210", "Example: 9876543210")}
+            type="tel"
+            {...register("mobileNumber", {
+              onBlur: (event) => {
+                setValue("mobileNumber", normalizeMobileNumber(event.currentTarget.value), {
+                  shouldDirty: true,
+                  shouldValidate: true
+                });
+              }
+            })}
           />
         </FormField>
       </div>

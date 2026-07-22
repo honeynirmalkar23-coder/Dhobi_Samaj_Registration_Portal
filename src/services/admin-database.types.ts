@@ -3,6 +3,7 @@ import type { PaymentStatus } from "../types/status";
 export type AdminRegistrationExportRow = {
   registrationId: string;
   fullName: string;
+  mobileNumber: string | null;
   dob: string | null;
   age: number;
   education: string;
@@ -23,4 +24,3 @@ export type ExportClearDatabaseResult = {
   deletedRows: number;
   filename: string;
 };
-

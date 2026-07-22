@@ -18,6 +18,7 @@ export function buildRegistrationFormData(values: RegistrationFormInputValues): 
 
   appendRegistrationField(formData, "fullName", values.fullName);
   appendRegistrationField(formData, "age", values.age);
+  appendRegistrationField(formData, "mobileNumber", values.mobileNumber);
   appendRegistrationField(formData, "educationLevel", values.educationLevel);
   appendRegistrationField(formData, "educationDetails", values.educationDetails);
   appendRegistrationField(formData, "permanentAddress", values.permanentAddress);
@@ -36,7 +37,7 @@ export function buildRegistrationFormData(values: RegistrationFormInputValues): 
 export async function createRegistration(
   values: RegistrationFormInputValues
 ): Promise<ServiceResult<CreateRegistrationResult>> {
-  if (dataBackendMode === "local-dev") {
+  if (import.meta.env.DEV && dataBackendMode === "local-dev") {
     const { createLocalRegistration } = await import("./backend/local-portal.client");
 
     return createLocalRegistration(values);

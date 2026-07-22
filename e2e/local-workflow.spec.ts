@@ -114,6 +114,7 @@ async function createRegistration(page: Page) {
   await page.goto("/registration");
   await page.getByLabel("नाम").fill("E2E Applicant");
   await page.getByLabel("उम्र").fill("34");
+  await page.getByLabel("मोबाइल नंबर").fill("9876543210");
   await page.getByLabel("शिक्षा स्तर").selectOption("graduate");
   await page.getByLabel("कक्षा / डिग्री / विषय").fill("Graduate");
   await page.getByLabel("स्थायी पता").fill("Ward 1, Local E2E Village, District Test, State Test");

@@ -66,7 +66,7 @@ function mapRowToSettings(row: {
 }
 
 export async function loadAdminPaymentSettings(): Promise<ServiceResult<AdminPaymentSettings>> {
-  if (dataBackendMode === "local-dev") {
+  if (import.meta.env.DEV && dataBackendMode === "local-dev") {
     const { loadLocalAdminPaymentSettings } = await import("./backend/local-portal.client");
 
     return loadLocalAdminPaymentSettings();
@@ -109,7 +109,7 @@ export async function saveAdminPaymentSettings(params: {
   currentQrCodePath: string | null;
   previousQrCodePath: string | null;
 }): Promise<ServiceResult<AdminPaymentSettings>> {
-  if (dataBackendMode === "local-dev") {
+  if (import.meta.env.DEV && dataBackendMode === "local-dev") {
     const { saveLocalAdminPaymentSettings } = await import("./backend/local-portal.client");
 
     return saveLocalAdminPaymentSettings({

@@ -112,6 +112,7 @@ export type RegistrationRow = {
   registration_id: string;
   full_name: string;
   age: number;
+  mobile_number: string | null;
   education_level: string;
   education_details: string | null;
   permanent_address: string;
@@ -154,4 +155,3 @@ export type PaymentProofRow = {
   reviewed_at: string | null;
   created_at: string;
 };
-

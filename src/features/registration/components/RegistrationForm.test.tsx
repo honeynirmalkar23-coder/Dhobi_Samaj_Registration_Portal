@@ -38,6 +38,7 @@ function renderRegistrationForm() {
 async function fillValidForm(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText("नाम *"), "सीता देवी");
   await user.type(screen.getByLabelText("उम्र *"), "35");
+  await user.type(screen.getByLabelText("मोबाइल नंबर *"), "9876543210");
   await user.selectOptions(screen.getByLabelText("शिक्षा स्तर *"), "graduate");
   await user.type(screen.getByLabelText("कक्षा / डिग्री / विषय"), "बी.ए.");
   await user.type(

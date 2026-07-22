@@ -4,6 +4,7 @@ import type { EducationLevelValue } from "../../../config/education-options.conf
 export type RegistrationFormInputValues = {
   fullName: string;
   age: string;
+  mobileNumber: string;
   educationLevel: "" | EducationLevelValue;
   educationDetails: string;
   permanentAddress: string;
@@ -17,6 +18,7 @@ export type RegistrationFormInputValues = {
 export type RegistrationFormValues = {
   fullName: string;
   age: number;
+  mobileNumber: string;
   educationLevel: EducationLevelValue;
   educationDetails?: string;
   permanentAddress: string;

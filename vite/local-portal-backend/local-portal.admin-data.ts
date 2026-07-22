@@ -68,6 +68,7 @@ function mapDetails(params: {
     eldersCount: params.registration.elders_count,
     fullName: params.registration.full_name,
     girlsCount: params.registration.girls_count,
+    mobileNumber: params.registration.mobile_number,
     paymentProofs: params.proofs.map((proof) => ({
       id: proof.id,
       mimeType: proof.mime_type,

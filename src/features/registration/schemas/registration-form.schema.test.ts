@@ -12,6 +12,7 @@ function validValues(overrides: Partial<RegistrationFormInputValues> = {}) {
   return {
     fullName: "राम कुमार",
     age: "35",
+    mobileNumber: "9876543210",
     educationLevel: "graduate",
     educationDetails: "बी.ए.",
     permanentAddress: "ग्राम उदाहरण, जिला उदाहरण, राज्य",
@@ -56,6 +57,14 @@ describe("registrationFormSchema", () => {
 
   it("requires education level", () => {
     expect(messagesFor({ educationLevel: "" })).toContain("कृपया शिक्षा स्तर चुनें।");
+  });
+
+  it.each([
+    ["", "कृपया मोबाइल नंबर दर्ज करें।"],
+    ["1234567890", "कृपया 10 अंकों का मान्य मोबाइल नंबर दर्ज करें।"],
+    ["98765", "कृपया 10 अंकों का मान्य मोबाइल नंबर दर्ज करें।"]
+  ])("validates mobile number value %s", (mobileNumber, message) => {
+    expect(messagesFor({ mobileNumber })).toContain(message);
   });
 
   it("requires details when education level is other", () => {

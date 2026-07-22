@@ -278,6 +278,7 @@ Deno.serve(async (request) => {
       () => supabase.rpc("create_registration_record", {
         p_full_name: registrationInput.fullName,
         p_age: registrationInput.age,
+        p_mobile_number: registrationInput.mobileNumber,
         p_education_level: registrationInput.educationLevel,
         p_education_details: registrationInput.educationDetails,
         p_permanent_address: registrationInput.permanentAddress,

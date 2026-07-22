@@ -5,6 +5,7 @@ import {
   isIntegerString,
   normalizeEducationDetails,
   normalizeFullName,
+  normalizeMobileNumber,
   normalizePermanentAddress
 } from "../utilities/registration-form.utils";
 
@@ -46,6 +47,11 @@ export const registrationFormSchema = z
       .refine((value) => Number.parseInt(value, 10) >= 1, "उम्र कम से कम 1 वर्ष होनी चाहिए।")
       .refine((value) => Number.parseInt(value, 10) <= 120, "उम्र 120 वर्ष से अधिक नहीं हो सकती।")
       .transform((value) => Number.parseInt(value, 10)),
+    mobileNumber: z
+      .string()
+      .transform(normalizeMobileNumber)
+      .refine((value) => value.length > 0, "कृपया मोबाइल नंबर दर्ज करें।")
+      .refine((value) => /^[6-9]\d{9}$/.test(value), "कृपया 10 अंकों का मान्य मोबाइल नंबर दर्ज करें।"),
     educationLevel: z
       .string()
       .refine((value) => educationValues.includes(value), "कृपया शिक्षा स्तर चुनें।"),

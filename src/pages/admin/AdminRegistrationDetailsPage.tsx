@@ -326,6 +326,7 @@ export function AdminRegistrationDetailsPage() {
         <dl className="grid gap-4 md:grid-cols-2">
           <DetailItem label={localized("नाम", "Name")} value={details.fullName} />
           <DetailItem label={localized("उम्र", "Age")} value={details.age} />
+          <DetailItem label={localized("मोबाइल नंबर", "Mobile number")} value={details.mobileNumber} />
           <DetailItem label={localized("शिक्षा स्तर", "Education level")} value={details.educationLevel} />
           <DetailItem label={localized("शिक्षा विवरण", "Education details")} value={details.educationDetails} />
           <DetailItem label={localized("स्थायी पता", "Permanent address")} value={details.permanentAddress} />

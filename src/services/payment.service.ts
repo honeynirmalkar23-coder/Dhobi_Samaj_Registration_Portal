@@ -57,10 +57,16 @@ export function getAcknowledgementFilename(registrationId: string): string {
 }
 
 function isLocalPortalAcknowledgementUrl(downloadUrl: string): boolean {
+  if (!import.meta.env.DEV) {
+    return false;
+  }
+
+  const localAcknowledgementPath = "/api/local-portal/acknowledgements/";
+
   try {
-    return new URL(downloadUrl, window.location.origin).pathname.startsWith("/api/local-portal/acknowledgements/");
+    return new URL(downloadUrl, window.location.origin).pathname.startsWith(localAcknowledgementPath);
   } catch {
-    return downloadUrl.startsWith("/api/local-portal/acknowledgements/");
+    return downloadUrl.startsWith(localAcknowledgementPath);
   }
 }
 
@@ -83,7 +89,7 @@ function createAcknowledgementDownloadRequest(params: {
 }
 
 export async function getPublicPaymentSettings(): Promise<ServiceResult<PublicPaymentSettingsResult>> {
-  if (dataBackendMode === "local-dev") {
+  if (import.meta.env.DEV && dataBackendMode === "local-dev") {
     const { getLocalPublicPaymentSettings } = await import("./backend/local-portal.client");
 
     return getLocalPublicPaymentSettings();
@@ -124,7 +130,7 @@ export async function submitPaymentProof(params: {
   paymentAccessToken: string;
   values: PaymentProofFormInputValues;
 }): Promise<ServiceResult<SubmitPaymentProofResult>> {
-  if (dataBackendMode === "local-dev") {
+  if (import.meta.env.DEV && dataBackendMode === "local-dev") {
     const { submitLocalPaymentProof } = await import("./backend/local-portal.client");
 
     return submitLocalPaymentProof(params);

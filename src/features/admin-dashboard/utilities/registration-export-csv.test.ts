@@ -17,6 +17,7 @@ function createExportRow(overrides: Partial<AdminRegistrationExportRow> = {}): A
     elderly: 1,
     fullName: "Export User",
     girls: 2,
+    mobileNumber: "9876543210",
     paymentAmount: 501,
     paymentReference: null,
     paymentStatus: "pending_verification",
@@ -51,6 +52,7 @@ describe("registration export CSV", () => {
       [
         "DS-2026-000001",
         "Export User",
+        "9876543210",
         "",
         34,
         "Graduate",
@@ -82,4 +84,3 @@ describe("registration export CSV", () => {
     expect(csv.endsWith("\"2026-07-20T00:10:00.000Z\"")).toBe(true);
   });
 });
-

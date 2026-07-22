@@ -15,6 +15,10 @@ function getField(fields: Map<string, string>, name: string): string {
   return fields.get(name)?.trim() ?? "";
 }
 
+function normalizeMobileNumber(value: string): string {
+  return value.replace(/[\s-]+/g, "");
+}
+
 function parseInteger(value: string): number | null {
   if (!/^\d+$/.test(value)) {
     return null;
@@ -28,6 +32,7 @@ function validateRegistrationFields(fields: Map<string, string>): {
   value: {
     fullName: string;
     age: number;
+    mobileNumber: string;
     educationLevel: string;
     educationDetails: string | null;
     permanentAddress: string;
@@ -42,6 +47,7 @@ function validateRegistrationFields(fields: Map<string, string>): {
 } {
   const fullName = getField(fields, "fullName");
   const age = parseInteger(getField(fields, "age"));
+  const mobileNumber = normalizeMobileNumber(getField(fields, "mobileNumber"));
   const educationLevel = getField(fields, "educationLevel");
   const educationDetailsText = getField(fields, "educationDetails");
   const educationDetails = educationDetailsText || null;
@@ -56,6 +62,10 @@ function validateRegistrationFields(fields: Map<string, string>): {
 
   if (age === null || age < 1 || age > 120) {
     return { message: "कृपया मान्य उम्र दर्ज करें।", ok: false };
+  }
+
+  if (!/^[6-9]\d{9}$/.test(mobileNumber)) {
+    return { message: "कृपया 10 अंकों का मान्य मोबाइल नंबर दर्ज करें।", ok: false };
   }
 
   if (!educationLevel || (educationLevel === "other" && !educationDetails)) {
@@ -90,6 +100,7 @@ function validateRegistrationFields(fields: Map<string, string>): {
       eldersCount,
       fullName,
       girlsCount,
+      mobileNumber,
       permanentAddress,
       totalFamilyMembers: boysCount + girlsCount + eldersCount
     }
@@ -147,6 +158,7 @@ export async function handleRegistrationCreate(params: {
           registration_id,
           full_name,
           age,
+          mobile_number,
           education_level,
           education_details,
           permanent_address,
@@ -164,12 +176,13 @@ export async function handleRegistrationCreate(params: {
           created_at,
           updated_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'awaiting_payment', 'not_submitted', ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'awaiting_payment', 'not_submitted', ?, ?, ?, ?)
       `).run(
         id,
         registrationId,
         fieldValidation.value.fullName,
         fieldValidation.value.age,
+        fieldValidation.value.mobileNumber,
         fieldValidation.value.educationLevel,
         fieldValidation.value.educationDetails,
         fieldValidation.value.permanentAddress,
@@ -213,4 +226,3 @@ export function getRegistrationById(db: Database, registrationId: string): Regis
     .prepare("SELECT * FROM registrations WHERE registration_id = ?")
     .get(registrationId) as RegistrationRow | undefined ?? null;
 }
-

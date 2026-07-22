@@ -86,6 +86,7 @@ describe("admin backend-connected routes", () => {
         eldersCount: 1,
         fullName: "सीता देवी",
         girlsCount: 3,
+        mobileNumber: "9876543210",
         paymentProofs: [],
         paymentResubmissionAllowed: false,
         paymentStatus: "pending_verification",

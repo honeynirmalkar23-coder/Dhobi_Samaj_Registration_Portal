@@ -100,6 +100,7 @@ export function buildLocalRegistrationFormData(values: RegistrationFormInputValu
 
   appendValue(formData, "fullName", values.fullName);
   appendValue(formData, "age", values.age);
+  appendValue(formData, "mobileNumber", values.mobileNumber);
   appendValue(formData, "educationLevel", values.educationLevel);
   appendValue(formData, "educationDetails", values.educationDetails);
   appendValue(formData, "permanentAddress", values.permanentAddress);

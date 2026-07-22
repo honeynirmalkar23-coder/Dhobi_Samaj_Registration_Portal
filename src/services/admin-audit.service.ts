@@ -31,7 +31,7 @@ export type AdminAuditResult = {
 export async function loadAdminAuditLogs(
   filters: AdminAuditFilters
 ): Promise<ServiceResult<AdminAuditResult>> {
-  if (dataBackendMode === "local-dev") {
+  if (import.meta.env.DEV && dataBackendMode === "local-dev") {
     const { loadLocalAdminAuditLogs } = await import("./backend/local-portal.client");
 
     return loadLocalAdminAuditLogs(filters);

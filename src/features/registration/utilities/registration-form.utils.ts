@@ -10,6 +10,7 @@ import type {
 export const registrationFormDefaults: RegistrationFormInputValues = {
   fullName: "",
   age: "",
+  mobileNumber: "",
   educationLevel: "",
   educationDetails: "",
   permanentAddress: "",
@@ -23,6 +24,7 @@ export const registrationFormDefaults: RegistrationFormInputValues = {
 export const registrationFieldLabels = {
   fullName: "नाम",
   age: "उम्र",
+  mobileNumber: "मोबाइल नंबर",
   educationLevel: "शिक्षा स्तर",
   educationDetails: "कक्षा / डिग्री / विषय",
   permanentAddress: "स्थायी पता",
@@ -36,6 +38,7 @@ export const registrationFieldLabels = {
 export const registrationFieldIds = {
   fullName: "registration-full-name",
   age: "registration-age",
+  mobileNumber: "registration-mobile-number",
   educationLevel: "registration-education-level",
   educationDetails: "registration-education-details",
   permanentAddress: "registration-permanent-address",
@@ -47,9 +50,14 @@ export const registrationFieldIds = {
 } as const satisfies Record<RegistrationFormFieldName, string>;
 
 const integerPattern = /^\d+$/;
+const mobileNumberPattern = /^[6-9]\d{9}$/;
 
 export function normalizeFullName(value: string): string {
   return value.trim().replace(/\s+/g, " ");
+}
+
+export function normalizeMobileNumber(value: string): string {
+  return value.trim().replace(/[\s-]+/g, "");
 }
 
 export function normalizeEducationDetails(value: string): string {
@@ -82,6 +90,10 @@ export function isValidFamilyCountValue(value: string): boolean {
   const parsedValue = parseIntegerField(value.trim());
 
   return parsedValue !== null && parsedValue >= 0 && parsedValue <= 99;
+}
+
+export function isValidMobileNumber(value: string): boolean {
+  return mobileNumberPattern.test(normalizeMobileNumber(value));
 }
 
 export function getFamilyCountTotal(values: Pick<
@@ -153,6 +165,7 @@ export function getRequiredProgress(values: RegistrationFormInputValues): Requir
     normalizeFullName(values.fullName).length >= 2 &&
       normalizeFullName(values.fullName).length <= 100,
     isValidAgeValue(values.age),
+    isValidMobileNumber(values.mobileNumber),
     values.educationLevel !== "",
     !requiresEducationDetails || normalizeEducationDetails(values.educationDetails).length > 0,
     normalizePermanentAddress(values.permanentAddress).length >= 10 &&

@@ -12,6 +12,7 @@ type FormErrorSummaryProps = {
 const registrationFieldLabelsEn = {
   fullName: "Name",
   age: "Age",
+  mobileNumber: "Mobile number",
   educationLevel: "Education level",
   educationDetails: "Class / degree / subject",
   permanentAddress: "Permanent address",

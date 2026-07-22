@@ -13,6 +13,10 @@ export function normalizeOptionalString(value: FormDataEntryValue | null): strin
   return normalizedValue.length > 0 ? normalizedValue : null;
 }
 
+function normalizeMobileNumber(value: FormDataEntryValue | null): string {
+  return normalizeString(value).replace(/[\s-]+/g, "");
+}
+
 export function normalizeRegistrationId(value: unknown): string {
   if (typeof value !== "string") {
     throw new ApiError("INVALID_REGISTRATION_ID", 400);
@@ -67,6 +71,7 @@ export function assertUpiId(value: string | null): void {
 export function parseRegistrationForm(formData: FormData) {
   const fullName = normalizeString(formData.get("fullName"));
   const age = parseIntegerField(formData.get("age"), "उम्र");
+  const mobileNumber = normalizeMobileNumber(formData.get("mobileNumber"));
   const educationLevel = normalizeString(formData.get("educationLevel"));
   const educationDetails = normalizeOptionalString(formData.get("educationDetails"));
   const permanentAddress = normalizeString(formData.get("permanentAddress"));
@@ -77,6 +82,9 @@ export function parseRegistrationForm(formData: FormData) {
 
   assertStringLength(fullName, 2, 100, "नाम 2 से 100 अक्षरों के बीच होना चाहिए।");
   assertRange(age, 1, 120, "उम्र 1 से 120 वर्ष के बीच होनी चाहिए।");
+  if (!/^[6-9]\d{9}$/.test(mobileNumber)) {
+    throw new ApiError("VALIDATION_ERROR", 400, "कृपया 10 अंकों का मान्य मोबाइल नंबर दर्ज करें।");
+  }
   assertStringLength(educationLevel, 1, 80, "कृपया शिक्षा स्तर चुनें।");
   if (educationDetails && educationDetails.length > 150) {
     throw new ApiError("VALIDATION_ERROR", 400, "शिक्षा विवरण 150 अक्षरों से अधिक नहीं हो सकता।");
@@ -96,6 +104,7 @@ export function parseRegistrationForm(formData: FormData) {
   return {
     fullName,
     age,
+    mobileNumber,
     educationLevel,
     educationDetails,
     permanentAddress,

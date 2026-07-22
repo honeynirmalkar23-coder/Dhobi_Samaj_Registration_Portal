@@ -50,6 +50,10 @@ export function RegistrationSummaryCard({ values }: RegistrationSummaryCardProps
           <dd className="mt-1 text-maroon-900">{displayValue(values.age, notEntered)}</dd>
         </div>
         <div className="py-3">
+          <dt className="font-semibold text-brown-700">{localized("मोबाइल नंबर", "Mobile number")}</dt>
+          <dd className="mt-1 text-maroon-900">{displayValue(values.mobileNumber, notEntered)}</dd>
+        </div>
+        <div className="py-3">
           <dt className="font-semibold text-brown-700">{localized("शिक्षा स्तर", "Education level")}</dt>
           <dd className="mt-1 text-maroon-900">
             {educationLabel || localized("अभी चयनित नहीं", "Not selected yet")}

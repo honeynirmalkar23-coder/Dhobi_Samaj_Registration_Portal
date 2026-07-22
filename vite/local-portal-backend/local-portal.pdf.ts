@@ -406,6 +406,7 @@ export function handleAcknowledgementPdf(params: {
   drawReportFieldGroup(doc, [
     { label: "Full name", value: registration.full_name },
     { label: "Age", value: registration.age },
+    { label: "Mobile number", value: registration.mobile_number },
     { label: "Education", value: formatEducation(registration.education_level, registration.education_details) },
     { label: "Permanent address", value: registration.permanent_address },
     { label: "Boys in family", value: registration.boys_count },

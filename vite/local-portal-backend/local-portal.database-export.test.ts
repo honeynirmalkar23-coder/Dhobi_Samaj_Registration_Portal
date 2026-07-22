@@ -283,6 +283,7 @@ describe("local admin database export and clear", () => {
         elderly: 1,
         fullName: "Export User",
         girls: 2,
+        mobileNumber: null,
         paymentAmount: 501,
         paymentReference: null,
         paymentStatus: "pending_verification",
@@ -484,4 +485,3 @@ describe("local admin database export and clear", () => {
     context.db.close();
   });
 });
-

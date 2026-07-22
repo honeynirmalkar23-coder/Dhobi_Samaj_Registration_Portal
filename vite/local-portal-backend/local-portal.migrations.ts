@@ -109,6 +109,14 @@ const migrations: Migration[] = [
       CREATE INDEX IF NOT EXISTS admin_audit_logs_created_idx
         ON admin_audit_logs(created_at DESC);
     `
+  },
+  {
+    version: 2,
+    sql: `
+      ALTER TABLE registrations
+        ADD COLUMN mobile_number TEXT NULL
+        CHECK (mobile_number IS NULL OR mobile_number GLOB '[6-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]');
+    `
   }
 ];
 
@@ -143,4 +151,3 @@ export function applyLocalPortalMigrations(db: Database): void {
     ON CONFLICT(id) DO NOTHING
   `).run(now, now);
 }
-

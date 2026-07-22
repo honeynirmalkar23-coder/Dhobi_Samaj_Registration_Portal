@@ -37,7 +37,7 @@ function getConfigurationFailure<T>(): ServiceResult<T> {
 }
 
 export async function loadAdminDashboardMetrics(): Promise<ServiceResult<AdminDashboardMetrics>> {
-  if (dataBackendMode === "local-dev") {
+  if (import.meta.env.DEV && dataBackendMode === "local-dev") {
     const { loadLocalAdminDashboardMetrics } = await import("./backend/local-portal.client");
 
     return loadLocalAdminDashboardMetrics();
@@ -74,7 +74,7 @@ async function loadSupabaseAdminDashboardMetrics(): Promise<ServiceResult<AdminD
 export async function loadAdminRegistrations(
   filters: AdminRegistrationFilters
 ): Promise<ServiceResult<AdminRegistrationListResult>> {
-  if (dataBackendMode === "local-dev") {
+  if (import.meta.env.DEV && dataBackendMode === "local-dev") {
     const { loadLocalAdminRegistrations } = await import("./backend/local-portal.client");
 
     return loadLocalAdminRegistrations(filters);

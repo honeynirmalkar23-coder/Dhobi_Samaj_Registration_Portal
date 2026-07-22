@@ -20,6 +20,7 @@ type RegistrationRecord = {
   full_name: string;
   girls_count: number;
   id: string;
+  mobile_number: string | null;
   payment_access_token_expires_at: string;
   payment_resubmission_allowed: boolean;
   payment_status: string;
@@ -197,6 +198,7 @@ function createAcknowledgementPdf(params: {
     "## Applicant and registration details",
     `Full name: ${params.registration.full_name}`,
     `Age: ${params.registration.age}`,
+    `Mobile number: ${params.registration.mobile_number ?? "Unavailable"}`,
     `Education: ${formatEducation(params.registration.education_level, params.registration.education_details)}`,
     `Permanent address: ${params.registration.permanent_address}`,
     `Boys in family: ${params.registration.boys_count}`,
@@ -255,7 +257,7 @@ Deno.serve(async (request) => {
     const supabase = getServiceRoleClient();
     const { data: registration, error: registrationError } = await supabase
       .from("registrations")
-      .select("id, registration_id, full_name, age, education_level, education_details, permanent_address, boys_count, girls_count, elders_count, total_family_members, payment_status, payment_resubmission_allowed, payment_access_token_expires_at, created_at")
+      .select("id, registration_id, full_name, age, mobile_number, education_level, education_details, permanent_address, boys_count, girls_count, elders_count, total_family_members, payment_status, payment_resubmission_allowed, payment_access_token_expires_at, created_at")
       .eq("registration_id", registrationId)
       .eq("payment_access_token_hash", tokenHash)
       .maybeSingle();

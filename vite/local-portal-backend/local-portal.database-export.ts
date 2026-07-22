@@ -13,6 +13,7 @@ const csvFilenamePattern = /^registrations_\d{4}-\d{2}-\d{2}(?:_\d{2}-\d{2})?\.c
 type LocalRegistrationExportRow = {
   registrationId: string;
   fullName: string;
+  mobileNumber: string | null;
   dob: string | null;
   age: number;
   education: string;
@@ -78,6 +79,7 @@ function getExportRows(db: Database): LocalRegistrationExportRow[] {
     SELECT
       r.registration_id,
       r.full_name,
+      r.mobile_number,
       r.age,
       r.education_level,
       r.permanent_address,
@@ -94,6 +96,7 @@ function getExportRows(db: Database): LocalRegistrationExportRow[] {
   `).all() as Array<{
     registration_id: string;
     full_name: string;
+    mobile_number: string | null;
     age: number;
     education_level: string;
     permanent_address: string;
@@ -116,6 +119,7 @@ function getExportRows(db: Database): LocalRegistrationExportRow[] {
     elderly: row.elders_count,
     fullName: row.full_name,
     girls: row.girls_count,
+    mobileNumber: row.mobile_number,
     paymentAmount: row.payment_amount === null ? null : Number(row.payment_amount),
     paymentReference: null,
     paymentStatus: row.payment_status,
@@ -318,4 +322,3 @@ export async function handleAdminDatabaseExportClear(params: {
     );
   }
 }
-

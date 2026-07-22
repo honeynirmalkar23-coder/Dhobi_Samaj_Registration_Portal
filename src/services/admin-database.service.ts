@@ -12,7 +12,7 @@ function getConfigurationFailure<T>(): ServiceResult<T> {
 }
 
 export async function loadAdminRegistrationExportRows(): Promise<ServiceResult<AdminRegistrationExportRow[]>> {
-  if (dataBackendMode === "local-dev") {
+  if (import.meta.env.DEV && dataBackendMode === "local-dev") {
     const { loadLocalAdminRegistrationExportRows } = await import("./backend/local-portal.client");
 
     return loadLocalAdminRegistrationExportRows();
@@ -44,6 +44,7 @@ async function loadSupabaseAdminRegistrationExportRows(): Promise<ServiceResult<
     elderly: Number(row.elderly),
     fullName: row.full_name,
     girls: Number(row.girls),
+    mobileNumber: row.mobile_number,
     paymentAmount: row.payment_amount === null ? null : Number(row.payment_amount),
     paymentReference: row.payment_reference,
     paymentStatus: row.payment_status,
@@ -57,7 +58,7 @@ export async function runAdminDatabaseExportClear(params: {
   expectedExportedRows: number;
   filename: string;
 }): Promise<ServiceResult<ExportClearDatabaseResult>> {
-  if (dataBackendMode === "local-dev") {
+  if (import.meta.env.DEV && dataBackendMode === "local-dev") {
     const { runLocalAdminDatabaseExportClear } = await import("./backend/local-portal.client");
 
     return runLocalAdminDatabaseExportClear(params);

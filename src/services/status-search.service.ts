@@ -6,7 +6,7 @@ import { dataBackendMode } from "./backend/backend-mode";
 export async function getPublicRegistrationStatus(
   registrationId: string
 ): Promise<ServiceResult<PublicRegistrationStatus>> {
-  if (dataBackendMode === "local-dev") {
+  if (import.meta.env.DEV && dataBackendMode === "local-dev") {
     const { getLocalPublicRegistrationStatus } = await import("./backend/local-portal.client");
 
     return getLocalPublicRegistrationStatus(registrationId);

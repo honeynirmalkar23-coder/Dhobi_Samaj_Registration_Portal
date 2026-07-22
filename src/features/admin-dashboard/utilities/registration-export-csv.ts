@@ -3,6 +3,7 @@ import type { AdminRegistrationExportRow } from "../../../services/admin-databas
 export const registrationExportCsvHeader = [
   "Registration ID",
   "Full Name",
+  "Mobile Number",
   "DOB",
   "Age",
   "Education",
@@ -41,6 +42,7 @@ function rowToCsvCells(row: AdminRegistrationExportRow): Array<string | number |
   return [
     row.registrationId,
     row.fullName,
+    row.mobileNumber,
     row.dob,
     row.age,
     row.education,
@@ -101,4 +103,3 @@ export function downloadRegistrationCsv(rows: AdminRegistrationExportRow[], file
 
   window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
-

@@ -23,6 +23,7 @@ export type AdminRegistrationDetails = {
   registrationId: string;
   fullName: string;
   age: number;
+  mobileNumber: string | null;
   educationLevel: string;
   educationDetails: string | null;
   permanentAddress: string;
@@ -85,6 +86,7 @@ function mapDetails(value: Json | null): AdminRegistrationDetails | null {
     registrationId: String(value.registrationId ?? ""),
     fullName: String(value.fullName ?? ""),
     age: Number(value.age ?? 0),
+    mobileNumber: value.mobileNumber === null ? null : String(value.mobileNumber ?? ""),
     educationLevel: String(value.educationLevel ?? ""),
     educationDetails: value.educationDetails === null ? null : String(value.educationDetails ?? ""),
     permanentAddress: String(value.permanentAddress ?? ""),
@@ -131,7 +133,7 @@ function mapDetails(value: Json | null): AdminRegistrationDetails | null {
 export async function loadAdminRegistrationDetails(
   registrationId: string
 ): Promise<ServiceResult<AdminRegistrationDetails | null>> {
-  if (dataBackendMode === "local-dev") {
+  if (import.meta.env.DEV && dataBackendMode === "local-dev") {
     const { loadLocalAdminRegistrationDetails } = await import("./backend/local-portal.client");
 
     return loadLocalAdminRegistrationDetails(registrationId);
@@ -179,7 +181,7 @@ export async function runAdminRegistrationAction(params: {
     | "enable_payment_resubmission";
   publicMessage?: string | null;
 }): Promise<ServiceResult<AdminRegistrationDetails>> {
-  if (dataBackendMode === "local-dev") {
+  if (import.meta.env.DEV && dataBackendMode === "local-dev") {
     const { runLocalAdminRegistrationAction } = await import("./backend/local-portal.client");
 
     return runLocalAdminRegistrationAction(params);
@@ -237,7 +239,7 @@ export async function updateAdminNotes(params: {
   expectedVersion: number;
   adminNotes: string;
 }): Promise<ServiceResult<AdminRegistrationDetails>> {
-  if (dataBackendMode === "local-dev") {
+  if (import.meta.env.DEV && dataBackendMode === "local-dev") {
     const { updateLocalAdminNotes } = await import("./backend/local-portal.client");
 
     return updateLocalAdminNotes(params);

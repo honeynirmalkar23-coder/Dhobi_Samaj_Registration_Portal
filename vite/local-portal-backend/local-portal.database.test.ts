@@ -108,9 +108,9 @@ describe("local portal backend configuration and database", () => {
     const secondContext = createLocalPortalContext(config);
 
     expect(firstContext.config.state).toBe("configured");
-    expect(firstContext.db?.prepare("SELECT COUNT(*) FROM local_schema_versions").pluck().get()).toBe(1);
+    expect(firstContext.db?.prepare("SELECT COUNT(*) FROM local_schema_versions").pluck().get()).toBe(2);
     expect(firstContext.db?.prepare("SELECT payment_enabled FROM payment_settings WHERE id = 1").pluck().get()).toBe(0);
-    expect(secondContext.db?.prepare("SELECT COUNT(*) FROM local_schema_versions").pluck().get()).toBe(1);
+    expect(secondContext.db?.prepare("SELECT COUNT(*) FROM local_schema_versions").pluck().get()).toBe(2);
 
     firstContext.db?.close();
     secondContext.db?.close();
